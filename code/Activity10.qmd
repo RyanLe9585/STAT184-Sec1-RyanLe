@@ -1,0 +1,143 @@
+---
+title: "Diabetes Study"
+author: "Jaden the Third of Atlanta"
+format:
+  html:
+    highlight-style: solarized
+number-lines: true
+---
+
+<!--
+# Context Prompt:
+# You are a medical researcher at the NIH studying diabetes risk factors. Using the provided dataset, analyze whether insulin, glucose, or both are likely drivers of diabetes, defined here as an increased risk indicated by a positive "Outcome" (1 = diabetes, 0 = no diabetes).
+-->
+
+In this analysis, we potential biomarkers are evaluated for diabetes risk, focusing on glucose and insulin levels, to determine which is most associated with diabetes development.
+
+## Introduction
+
+Diabetes affects millions of people worldwide, with biomarkers such as glucose and insulin playing a crucial role in disease onset. This study seeks to identify which biomarker might act as a primary driver of diabetes by examining the relationship between each biomarker and diabetes outcome.
+
+## Loading Packages
+```{r}
+#| label: load-pkgs
+#| code-summary: "Load Packages"
+#| message: false
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+## Loading Data
+```{r}
+#| label: data-load
+#| code-summary: "Load Data"
+
+data <- read.csv("diabetes_dataset.csv")
+```
+
+## Cleaning Data
+```{r}
+#| label: data-clean
+#| code-summary: "Data Cleaning and Transformation"
+
+data <- data %>% 
+  mutate(Glucose_Quartile = ntile(Glucose, 3)) %>%
+  mutate(Insulin_Quartile = ntile(Insulin, 3))
+```
+
+## Data Overview
+```{r}
+#| label: eda-overview
+#| code-summary: "Data Overview"
+
+head(data)
+summary(data)
+```
+The dataset contains metrics about pregnancies, glucose, blood pressure, skin thickness, insulin, BMI, diabetes pedigree function, age, and diabetes outcome. Key variables show a wide range of values, with glucose (mean 120.9) and insulin (mean 79.8) having relatively high variability, whilst skin thickness has many low values. The dataset is skewed toward lower insulin and glucose levels for most individuals. The age range spans from 21 to 81 years, with a mean of 33.2. About 35% of the individuals have diabetes, as indicated by the outcome variable. Overall, the data highlights key health indicators that may influence diabetes risk, particularly glucose and insulin levels.
+
+
+## Insulin Levels by Diabetes Outcome
+```{r}
+#| label: fig-insulin-diabetes
+#| fig-cap: "Boxplot of Insulin by Diabetes Outcome"
+
+ggplot(data, aes(x = factor(Outcome), y = log(Insulin))) +
+  geom_boxplot() +
+  labs(x = "Outcome", y = "Insulin (log)", title = "Boxplot of Insulin by Diabetes Outcome") +
+  theme_minimal()
+```
+
+This boxplot shows the distribution of insulin levels for participants with and without diabetes. On average, it shows that individuals with higher average insulin levels have a higher outcome of Diabetes.
+
+## Glucose Levels by Diabetes Outcome
+```{r}
+#| label: fig-glucose-diabetes
+#| fig-cap: "Boxplot of Glucose by Diabetes Outcome"
+
+ggplot(data, aes(x = factor(Outcome), y = Glucose)) +
+  geom_boxplot() +
+  labs(x = "Outcome", y = "Glucose", title = "Boxplot of Glucose by Diabetes Outcome") +
+  theme_minimal()
+```
+This boxplot shows the distribution of glucose levels for participants with and without diabetes. On average, it shows that individuals with higher average glucose levels have a higher outcome of Diabetes.
+
+## Density Plot of Insulin
+```{r}
+#| label: fig-insulin-density
+#| fig-cap: "Density Plot of Insulin by Diabetes Outcome"
+
+ggplot(data, aes(x = log(Insulin), fill = factor(Outcome))) +
+  geom_density(alpha = 0.5) +
+  labs(x = "Insulin (log)", y = "Density", fill = "Outcome") +
+  theme_minimal() +
+  scale_fill_manual(values = c("0" = "blue", "1" = "red"))
+```
+This density plot of Insulin suggests that individuals with diabetes tend to have a higher distribution of insulin levels, with some overlap between the groups.
+
+## Desnity Plot of Glucose
+```{r}
+#| label: fig-glucose-density
+#| fig-cap: "Density Plot of Glucose by Diabetes Outcome"
+
+ggplot(data, aes(x = Glucose, fill = factor(Outcome))) +
+  geom_density(alpha = 0.5) +
+  labs(x = "Glucose", y = "Density", fill = "Outcome") +
+  theme_minimal() +
+  scale_fill_manual(values = c("0" = "blue", "1" = "red"))
+```
+Similarly, glucose levels also show a shift towards higher values in individuals with diabetes, indicating that there is correlation between glucose levels and diabetes.
+
+## Relationship Between Glucose and Insulin
+```{r}
+#| label: fig-glucose-insulin
+#| fig-cap: "Scatter Plot of Glucose vs. Insulin"
+
+ggplot(data, aes(x = Glucose, y = log(Insulin))) +
+  geom_point(alpha = 0.6, color = "blue") +
+  geom_smooth(method = "lm", color = "red", se = TRUE) +
+  labs(x = "Glucose", y = "Insulin (log)", title = "Scatter Plot of Glucose vs. Insulin") +
+  theme_minimal()
+```
+This graph indicates that there is that even with vast outliers, there is a linear relationship between glucose and insulin. This suggests that if someone has higher insulin levels, they may likely have higher glucose levels as well.
+
+## Diabetes Rate by Glucose and Insulin Quartiles
+```{r}
+#| label: fig-diabetes-rate
+#| fig-cap: "Diabetes Rate by Glucose and Insulin Quartiles"
+
+summary_data <- data %>%
+  group_by(Glucose_Quartile, Insulin_Quartile) %>%
+  summarise(Outcome_Percent = mean(Outcome == 1) * 100) %>%
+  ungroup()
+
+ggplot(summary_data, aes(x = Glucose_Quartile, y = Outcome_Percent, color = factor(Insulin_Quartile))) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Glucose Quartile", y = "Diabetes Rate (%)", color = "Insulin Quartile") +
+  theme_minimal()
+```
+This plot reveals a combined influence of glucose and insulin on diabetes rates, with higher quartiles of both biomarkers showing increased prevalence in the outcome of someone having diabetes.
+
+Overall, this analysis indicates a correlation with both glucose and insulin levels to the risk of diabetes. Higher glucose levels correlate strongly with diabetes incidence, while insulin levels show a similar trend, especially at elevated glucose levels. Both biomarkers should be considered significant in evaluating diabetes risk, with glucose potentially having a more direct impact on the outcome.
