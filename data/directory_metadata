@@ -1,0 +1,7 @@
+There are three folders and three files inside the directory.
+The first folder is a folder hidden in windows, and it is a .git folder, which contains the files for the repository to function.
+The second folder is more crucial, as it is a code file, which is meant to contain any relevant qmd and r code files. This folder currently contains a qmd from Activity 10
+There is alsoe a .gitkeep file which indicates the file should be kept when comitting and pushing from local to remote
+The third folder is for the data, which is meant for txt and csv files of data. It currently has the .gitkeep file as well as the diabetes dataset csv file from activity 10.
+The other files include .gitattributes, which detects text files, and the .gitignore files, which indicates the files to not push to remote when committing
+Lastly, there is a readme.md file which is meant to describe the repository but currently indicates that it is compied from the template.
